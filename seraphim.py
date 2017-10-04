@@ -18,22 +18,23 @@ def parse_open_ports(line):
     
     host_text, host_info = line.split('Ports: ')
     host_match = host_pattern.findall(host_text)
-    host_info_match = host_info_pattern.findall(host_info)
 
     if not (host_match or host_info_match):
         return open_ports
 
     ip = host_match[0]
-    for match in host_info_match:
-        port, status, protocol, service = match
-        if 'http' in service:
-            open_ports.append({
-                'ip': ip,
-                'port': port,
-                'status': status,
-                'protocol': protocol,
-                'service': service,
-            })
+    for entry in host_info.split(', '):
+        host_info_match = host_info_pattern.findall(entry)
+        for match in host_info_match:
+            port, status, protocol, service = match
+            if 'http' in service:
+                open_ports.append({
+                    'ip': ip,
+                    'port': port,
+                    'status': status,
+                    'protocol': protocol,
+                    'service': service,
+                })
     return open_ports
 
 @click.command()
@@ -52,11 +53,13 @@ def main(file):
         click.secho('[!] FAIL: %s' % e, fg='red')
         sys.exit(1)
 
-    pool = multiprocessing.Pool(multiprocessing.cpu_count() * 4)
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() * 2)
     open_ports = filter(None, pool.map(parse_open_ports, contents))
 
     urls = []
-    for host in [item[0] for item in open_ports]:
+    # fyi the listception black magic below 'flattens' open_ports,
+    # which is a list of lists
+    for host in [item for sublist in open_ports for item in sublist]:
         is_ssl = True if 'ssl' in host['service'] else False
         url = '%s://%s%s' % ('https' if is_ssl else 'http', host['ip'], ':%s' % host['port'] if host['port'] not in ['80','443'] else '')
         urls.append(('%s_%s' % (host['ip'], host['port']), url))
