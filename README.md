@@ -2,6 +2,8 @@
 multithreaded screenshot grabber using nmap greppable output formats
 
 ## requirements
+`phantomjs` must be installed (via npm, apt, whatever)
+
 `pip install click`
 
 ## usage
