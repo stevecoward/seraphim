@@ -1,0 +1,7 @@
+env/
+tmp/
+output/
+samples/
+*.pyc
+.DS_Store
+ghostdriver.log
