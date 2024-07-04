@@ -1,12 +1,14 @@
 # seraphim
-multithreaded screenshot grabber using nmap greppable output formats
+asynchronous screenshot grabber using nmap greppable output formats
 
 ## requirements
-`phantomjs` must be installed (via npm, apt, whatever)
+`playwright` must be installed 
 
-`pip install click`
+`pip install -r requirements.txt`
+
+`playwright install`
 
 ## usage
 `> python seraphim.py -f <path_to_greppable_nmap_file>`
 
-screenshots are placed in `output/` folder
+screenshots are placed in `screenshots/` folder

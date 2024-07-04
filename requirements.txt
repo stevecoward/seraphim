@@ -1,1 +1,1 @@
-click>=6.7
+playwright # then run 'playwright install' to install dependencies
