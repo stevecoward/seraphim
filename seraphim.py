@@ -6,7 +6,7 @@ import re
 from playwright.async_api import async_playwright
 
 
-async def take_screenshot(url):
+async def take_screenshot(url, timeout):
     filename = re.sub(r'https?:\/\/', '', url)
     filename = filename.replace(':','_')
     
@@ -15,7 +15,7 @@ async def take_screenshot(url):
         context = await browser.new_context(ignore_https_errors=True)
         page = await context.new_page()
         try:
-            await page.goto(url, timeout=10000)
+            await page.goto(url, timeout=(timeout * 1000))
             await page.screenshot(path=f'screenshots/{filename}.png')
             await browser.close()
         except Exception as e:
@@ -60,7 +60,7 @@ def extract_data(fh_readlines):
     return parsed_data
 
 
-async def main(file_path: str, threads: int):
+async def main(file_path: str, timeout: int):
     parsed_data = []
     tasks = []
     
@@ -70,13 +70,14 @@ async def main(file_path: str, threads: int):
     with open(file_path, 'r') as fh:
         parsed_data = extract_data(fh.readlines())
 
-    [tasks.append(asyncio.create_task(take_screenshot(url))) for url in build_url_list(parsed_data)]
+    [tasks.append(asyncio.create_task(take_screenshot(url, timeout))) for url in build_url_list(parsed_data)]
     
     await asyncio.gather(*tasks)    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='extract web services from an nmap file and grab screenshots')
     parser.add_argument('-f', '--file', required=True, help='greppable nmap file')
+    parser.add_argument('-t', '--timeout', type=int, default=10, help='timeout for screenshot requests (seconds)')
     args = parser.parse_args()
     
-    asyncio.run(main(args.file))
+    asyncio.run(main(args.file, args.timeout))
